@@ -1,6 +1,27 @@
-$color: yellow;
+iframe {
+  display: none;
+}
+
+html {
+  font-family: Arial, sans-serif;
+}
 
 body {
-  background-color: lightgoldenrodyellow;
-  padding: 20px;
+  padding: 12px;
+}
+
+button {
+  cursor: pointer;
+}
+
+.with-error {
+  border: 3px solid red;
+}
+
+.error {
+  color: red;
+}
+
+.deleteButton {
+  border-radius: 50%;
 }

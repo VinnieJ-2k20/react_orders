@@ -1,72 +1,91 @@
 import './App.scss';
 
-// import users from './api/users.json';
-// import products from './api/products.json';
-// import orders from './api/orders.json';
+import { useState } from 'react';
+import goodsFromServer from './api/goods.json';
+import colorsFromServer from './api/colors.json';
+import { Color, Good, GoodWithColor } from './app.typedefs';
+import { GoodForm, GoodsList } from './components';
 
-function App() {
+const findColorById = (
+  colors: Color[],
+  colorId: number,
+): Color | null => (
+  colors.find(({ id }) => colorId === id) || null
+);
+
+const prepareGoods = (
+  goods: Good[],
+  colors: Color[],
+): GoodWithColor[] => {
+  return goods.map((good) => ({
+    ...good,
+    color: findColorById(colors, good.colorId),
+  }));
+};
+
+const preparedGoods = prepareGoods(
+  goodsFromServer,
+  colorsFromServer,
+);
+
+const App = () => {
+  const [goods, setGoods] = useState<GoodWithColor[]>(preparedGoods);
+
+  const addGood = (name: string, colorId: number) => {
+    const newGood: GoodWithColor = {
+      id: Date.now() + Math.random(),
+      name,
+      colorId,
+      color: findColorById(colorsFromServer, colorId),
+    };
+
+    setGoods((prevGoods) => ([newGood, ...prevGoods]));
+  };
+
+  const updateGood = (
+    selectedGoodId: number,
+    name: string,
+    colorId: number,
+  ) => {
+    setGoods((prevGoods) => (
+      prevGoods.map((good) => {
+        if (good.id !== selectedGoodId) {
+          return good;
+        }
+
+        return {
+          ...good,
+          name,
+          colorId,
+          color: findColorById(colorsFromServer, colorId),
+        };
+      })
+    ));
+  };
+
+  const deleteGood = (goodId: number) => {
+    setGoods((prevGoods) => (
+      prevGoods.filter(({ id }) => id !== goodId)
+    ));
+  };
+
   return (
-    <div className="container">
-      <div className="ui card">
-        <div className="ui content">
-          <div className="ui description">
-            <p>Sunday - (Roma)</p>
-            <ul className="ui list">
-              <li>Banana</li>
-              <li>Beer</li>
-              <li>Cake</li>
-            </ul>
-          </div>
-        </div>
-      </div>
+    <div>
+      <h1>Add Good Form</h1>
 
-      <div className="ui card">
-        <div className="ui content">
-          <div className="ui description">
-            <p>My day - (Anna)</p>
-            <b>No tasks</b>
-          </div>
-        </div>
-      </div>
+      <GoodForm
+        processGoodCallback={addGood}
+        colorOptions={colorsFromServer}
+      />
 
-      <div className="ui card">
-        <div className="ui content">
-          <div className="ui description">
-            <p>Work - (Roma)</p>
-            <ul className="ui list">
-              <li>Sugar</li>
-              <li>Coffee</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div className="ui card">
-        <div className="ui content">
-          <div className="ui description">
-            <p>Monday - (Anna)</p>
-            <ul className="ui list">
-              <li>Milk</li>
-              <li>Bread</li>
-              <li>Eggs</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div className="ui card">
-        <div className="ui content">
-          <div className="ui description">
-            <p>Everyday - (Max)</p>
-            <ul className="ui list">
-              <li>Cheese</li>
-              <li>Sugar</li>
-            </ul>
-          </div>
-        </div>
-      </div>
+      <GoodsList
+        goods={goods}
+        handleGoodUpdate={updateGood}
+        handleGoodDeletion={deleteGood}
+        colorOptions={colorsFromServer}
+      />
     </div>
   );
-}
+};
 
 export default App;
